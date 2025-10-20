@@ -7,10 +7,13 @@ npm-debug.log
 logs
 *.log
 
-# Env
+# Env files
 .env
-.env.local
+.env.*
+!.env.example
 
 # Build outputs
 build
 dist
+.svelte-kit
+.vercel
