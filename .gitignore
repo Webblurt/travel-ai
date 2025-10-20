@@ -3,6 +3,11 @@ node_modules
 npm-debug.log
 .DS_Store
 
+# Go
+*.exe
+*.out
+*.test
+
 # Logs
 logs
 *.log
