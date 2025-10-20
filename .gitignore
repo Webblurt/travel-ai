@@ -22,3 +22,8 @@ build
 dist
 .svelte-kit
 .vercel
+
+# AI logs 
+ai/logs/*
+!ai/logs/.gitkeep
+
