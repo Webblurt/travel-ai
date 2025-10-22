@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
-	"travel-ai/backend/internal/ai"
+	"travel-ai/internal/ai"
 )
 
 func HandleGenerateItinerary(w http.ResponseWriter, r *http.Request) {
