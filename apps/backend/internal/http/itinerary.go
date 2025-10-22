@@ -1,16 +1,11 @@
 package http
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
+	"travel-ai/backend/internal/ai"
 )
-
-type ItineraryResponse struct {
-	Days []struct {
-		Day  int      `json:"day"`
-		Plan []string `json:"plan"`
-	} `json:"days"`
-}
 
 func HandleGenerateItinerary(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -19,19 +14,21 @@ func HandleGenerateItinerary(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := map[string]interface{}{
-		"days": []map[string]interface{}{
-			{
-				"day": 1,
-				"plan": []string{
-					"Arrive and check-in",
-					"Explore city center",
-					"Visit local restaurant",
-				},
-			},
-		},
+	type Req struct {
+		Destination string `json:"destination"`
+		Days        int    `json:"days"`
+	}
+	var req Req
+	json.NewDecoder(r.Body).Decode(&req)
+
+	client := ai.NewAIClient()
+	result, err := client.GenerateItinerary(context.Background(), req.Destination, req.Days)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(result)
 }
