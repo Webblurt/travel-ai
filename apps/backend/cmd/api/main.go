@@ -1,21 +1,27 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"net/http"
-	handlers "travel-ai/internal/http"
 )
 
 func main() {
 	mux := http.NewServeMux()
-	handlers.SetupRoutes(mux)
 
-	// Health check
-	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status": "ok"}`))
+	// API endpoint
+	mux.HandleFunc("/api/itinerary", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, `{"error":"method not allowed"}`, http.StatusMethodNotAllowed)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"message":"AI itinerary generated"}`))
 	})
 
-	fmt.Println("Backend running on :8080")
-	http.ListenAndServe(":8080", mux)
+	// Serve static frontend files
+	fs := http.FileServer(http.Dir("./frontend"))
+	mux.Handle("/", fs)
+
+	log.Println("Server running on :8080")
+	log.Fatal(http.ListenAndServe(":8080", mux))
 }

@@ -46,3 +46,9 @@ error.log*
 # Misc
 tmp/
 temp/
+
+# Docker
+*.tar
+*.img
+*.log
+.dockerignore
