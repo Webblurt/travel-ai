@@ -1,4 +1,4 @@
-# Feature Request — Generate Travel Itinerary
+# Feature Request - Generate Travel Itinerary
 
 Goal:
 User can click "Generate itinerary" in frontend and receive a day-by-day travel plan from the backend using AI.

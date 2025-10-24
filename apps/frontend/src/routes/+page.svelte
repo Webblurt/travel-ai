@@ -39,7 +39,7 @@
 </script>
 
 <main class="flex flex-col items-center justify-center min-h-screen bg-gray-50 text-gray-800 p-6">
-  <h1 class="text-3xl font-bold mb-6 text-center"> AI Travel Planner</h1>
+  <h1 class="text-3xl font-bold mb-6 text-center">AI Travel Planner</h1>
 
   <div class="bg-white shadow-md rounded-2xl p-6 w-full max-w-md">
     <label for="city" class="block mb-2 font-medium">Введите город</label>
@@ -56,9 +56,9 @@
       disabled={loading}
     >
       {#if loading}
-        ⏳ Генерация маршрута...
+        Генерация маршрута...
       {:else}
-        ✈️ Сгенерировать маршрут
+        Сгенерировать маршрут
       {/if}
     </button>
 

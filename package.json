@@ -1,15 +1,32 @@
 {
   "name": "travel-ai",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
   "private": true,
-  "packageManager": "npm@10.8.2",
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
-  "devDependencies": {
-    "turbo": "^2.5.8"
-  },
+  "packageManager": "npm@10.9.4",
   "scripts": {
     "dev": "turbo run dev --parallel"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Webblurt/travel-ai.git"
+  },
+  "keywords": [],
+  "author": "webblurt",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Webblurt/travel-ai/issues"
+  },
+  "homepage": "https://github.com/Webblurt/travel-ai#readme",
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.15",
+    "turbo": "^2.5.8"
   }
 }
