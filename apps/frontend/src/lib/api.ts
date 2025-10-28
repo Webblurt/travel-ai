@@ -15,7 +15,13 @@ export async function getItinerary(
   if (budget) params.append('budget', budget)
   if (currency) params.append('currency', currency)
 
-  const res = await fetch(`${BASE_URL}/api/v1/itineraries?${params.toString()}`)
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/itineraries?${params.toString()}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${import.meta.env.VITE_API_TOKEN}`,
+    },
+  })
 
   if (!res.ok) {
     throw new Error(`request error: ${res.status} ${res.statusText}`)
