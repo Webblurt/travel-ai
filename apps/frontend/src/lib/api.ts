@@ -1,6 +1,16 @@
 import type { ItineraryResponse } from './types'
 
-const BASE_URL = import.meta.env.VITE_API_URL
+function basicValidate(it: any): it is ItineraryResponse {
+  if (!it || typeof it !== 'object') return false
+  if (typeof it.city !== 'string') return false
+  if (typeof it.itinerary_cost !== 'string') return false
+  if (!Array.isArray(it.days)) return false
+  for (const d of it.days) {
+    if (typeof d.day_number !== 'number' && typeof d.day_number !== 'string') return false
+    if (!d.morning || !d.day || !d.evening) return false
+  }
+  return true
+}
 
 export async function getItinerary(
   city: string,
@@ -23,14 +33,30 @@ export async function getItinerary(
     },
   })
 
+  const raw = await res.text()
+
   if (!res.ok) {
-    throw new Error(`request error: ${res.status} ${res.statusText}`)
+    const err = new Error(`API error: ${res.status} ${res.statusText}`)
+    ;(err as any).status = res.status
+    ;(err as any).raw = raw
+    throw err
   }
 
   try {
-    return await res.json()
-  } catch (err) {
-    console.error('Error while parsing json:', err)
-    throw new Error('Unvalid server response')
+    const parsed = JSON.parse(raw)
+    if (!basicValidate(parsed)) {
+      const err = new Error('Invalid JSON structure from AI')
+      ;(err as any).raw = raw
+      throw err
+    }
+    parsed.days = parsed.days.map((d: any) => ({
+      ...d,
+      day_number: Number(d.day_number)
+    }))
+    return parsed as ItineraryResponse
+  } catch (e) {
+    const err = new Error('Invalid JSON from AI')
+    ;(err as any).raw = raw
+    throw err
   }
 }
