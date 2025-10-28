@@ -4,16 +4,16 @@ const BASE_URL = import.meta.env.VITE_API_URL
 
 export async function getItinerary(
   city: string,
-  days = '3',
-  budget = 'any',
-  currency = '$'
+  days?: string,
+  budget?: string,
+  currency?: string
 ): Promise<ItineraryResponse> {
-  const params = new URLSearchParams({
-    city,
-    days,
-    budget,
-    currency
-  })
+  const params = new URLSearchParams()
+
+  params.append('city', city)
+  if (days) params.append('days', days)
+  if (budget) params.append('budget', budget)
+  if (currency) params.append('currency', currency)
 
   const res = await fetch(`${BASE_URL}/api/v1/itineraries?${params.toString()}`)
 
