@@ -52,3 +52,7 @@ temp/
 *.img
 *.log
 .dockerignore
+
+# Yamls
+*.yaml
+.yaml
