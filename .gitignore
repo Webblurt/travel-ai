@@ -56,3 +56,6 @@ temp/
 # Yamls
 *.yaml
 .yaml
+
+#db
+travel-data/

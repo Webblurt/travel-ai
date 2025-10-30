@@ -5,4 +5,5 @@ type GetItineraryReq struct {
 	Days     string `json:"days"`
 	Budget   string `json:"budget"`
 	Currency string `json:"currency"`
+	UserID   string
 }

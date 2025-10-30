@@ -2,14 +2,13 @@ package clients
 
 import (
 	"errors"
-	models "travel-ai/internal/models"
 	utils "travel-ai/internal/utils"
 
 	"github.com/sashabaranov/go-openai"
 )
 
 type ClientsInterface interface {
-	GenerateItinerary(req models.OpenAIReq) (models.OpenAIResp, error)
+	AskOpenAI(promptType string, req interface{}) (interface{}, error)
 }
 
 type Client struct {

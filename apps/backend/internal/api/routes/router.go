@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"strings"
@@ -24,7 +23,7 @@ func CreateRoutes(service services.ServiceInterface) (http.Handler, error) {
 	mux.HandleFunc("/api/v1/itineraries", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			itineraries.GetItineraryHandler(w, r)
+			itineraries.GetItineraryHandler()(w, r)
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
@@ -39,32 +38,33 @@ func CreateRoutes(service services.ServiceInterface) (http.Handler, error) {
 
 		path := strings.TrimPrefix(r.URL.Path, "/api/v1/itineraries/")
 		if path == "" {
-			itineraries.GetItineraryHandler(w, r)
-			return
+			itineraries.GetItineraryHandler()(w, r)
 		}
-
 		parts := strings.Split(path, "/")
 
 		switch len(parts) {
 		case 1:
 			// /api/v1/itineraries/:id
-			r = r.WithContext(context.WithValue(r.Context(), "id", parts[0]))
-			itineraries.GetSavedItineraryHandler(w, r)
+			id := parts[0]
+			itineraries.GetSavedItineraryHandler(id)(w, r)
+
+		case 2:
+			// /api/v1/itineraries/:id/:dayNum
+			id := parts[0]
+			dayNum := parts[1]
+			itineraries.GetExactDayItineraryHandler(id, dayNum)(w, r)
 
 		case 3:
+			// /api/v1/itineraries/:id/:dayNum/:section
 			id := parts[0]
 			dayNum := parts[1]
 			section := parts[2]
 
 			switch section {
-			case "morning": // /api/v1/itineraries/:id/:day_number/morning
-				itineraries.GetMorningItineraryHandler(w, r, id, dayNum)
-			case "afternoon": // /api/v1/itineraries/:id/:day_number/afternoon
-				itineraries.GetAfternoonItineraryHandler(w, r, id, dayNum)
-			case "evening": // /api/v1/itineraries/:id/:day_number/evening
-				itineraries.GetEveningItineraryHandler(w, r, id, dayNum)
+			case "morning", "afternoon", "evening":
+				itineraries.GetTimeOfDayItineraryHandler(id, dayNum, section)(w, r)
 			default:
-				http.Error(w, "unknown section", http.StatusBadRequest)
+				http.Error(w, "unknown time of a day", http.StatusBadRequest)
 			}
 
 		default:

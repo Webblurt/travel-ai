@@ -18,8 +18,18 @@ type Config struct {
 	Logger struct {
 		LogLevel string `yaml:"log_level"`
 	} `yaml:"logger"`
+	Database struct {
+		Name          string `yaml:"name"`
+		Host          string `yaml:"host"`
+		Port          int    `yaml:"port"`
+		User          string `yaml:"user"`
+		Password      string `yaml:"password"`
+		Database      string `yaml:"database"`
+		MigrationPath string `yaml:"migration_path"`
+	} `yaml:"database"`
 	Prompts struct {
-		TravelAI struct {
+		TravelAI []struct {
+			PromptType string `yaml:"prompt_type"`
 			SystemRole string `yaml:"system_role"`
 			UserPrompt string `yaml:"user_prompt"`
 		} `yaml:"travel_ai"`
