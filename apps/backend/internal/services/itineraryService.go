@@ -187,7 +187,7 @@ func (s *Service) createItinerary(req models.OpenAIGenerateItineraryResp, user s
 	}()
 
 	itineraryEntity := models.Entity{
-		EntityName: "ititeraries",
+		EntityName: "itineraries",
 		StringParameters: map[string]string{
 			"city":       req.City,
 			"cost":       req.ItineraryCost,

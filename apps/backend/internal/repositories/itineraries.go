@@ -48,7 +48,7 @@ func (r *Repository) GetItinerary(ctx context.Context, filters models.ItineraryF
 	if filters.DayNum != "" {
 		daynum, err := strconv.Atoi(filters.DayNum)
 		if err != nil {
-			return nil, fmt.Errorf("invalid day number")
+			r.log.Warn("Invalid day number: ", filters.DayNum)
 		}
 		query += fmt.Sprintf(" AND id.day_number = $%d", argID)
 		args = append(args, daynum)
@@ -62,23 +62,22 @@ func (r *Repository) GetItinerary(ctx context.Context, filters models.ItineraryF
 
 	query += " ORDER BY id.day_number, da.time_of_day"
 
-	r.log.Debug("Query created: ", query)
-	r.log.Debug("Starting execution....")
 	rows, err := r.DB.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	r.log.Debug("Query executed successfully")
 
 	scanItem := func(rows pgx.Rows) (models.GetItemPlan, int, string, error) {
 		var item models.GetItemPlan
 		var dayNum int
 		var timeOfDay string
-		var imgURL, imgDesc, fact, bring, tip, note string
-		var activityID string
+		var (
+			fact, bring, tip, note *string
+			imgURL, imgDesc        *string
+			activityID             string
+		)
 
-		r.log.Debug("Starting to scan rows")
 		err := rows.Scan(
 			new(interface{}), &item.City, new(interface{}), &activityID,
 			&dayNum, &timeOfDay, &item.Place,
@@ -99,52 +98,56 @@ func (r *Repository) GetItinerary(ctx context.Context, filters models.ItineraryF
 
 		item.ID = activityID
 
-		if imgURL != "" {
+		if imgURL != nil {
 			item.Details.Images = append(item.Details.Images, struct {
 				URL         string
-				Description string
-			}{URL: imgURL, Description: imgDesc})
+				Description *string
+			}{URL: *imgURL, Description: imgDesc})
 		}
-		if fact != "" {
+		if fact != nil {
 			item.Details.Overview.InterestingFacts = append(item.Details.Overview.InterestingFacts, fact)
 		}
-		if bring != "" {
+		if bring != nil {
 			item.Details.Tips.WhatToBring = append(item.Details.Tips.WhatToBring, bring)
 		}
-		if tip != "" {
+		if tip != nil {
 			item.Details.Tips.LocalTips = append(item.Details.Tips.LocalTips, tip)
 		}
-		if note != "" {
+		if note != nil {
 			item.Details.Tips.SafetyNotes = append(item.Details.Tips.SafetyNotes, note)
 		}
 
 		return item, dayNum, timeOfDay, nil
 	}
-	r.log.Debug("Scanning finifhed successfully.")
 
-	r.log.Debug("Preparing responce with right model...")
 	switch {
 	case filters.TimeOfDay != "":
-		r.log.Debug("Model: ActivityDetails")
 		var result models.GetItemPlan
 		for rows.Next() {
 			item, _, _, err := scanItem(rows)
 			if err != nil {
 				return nil, err
 			}
-			result = item
+			result.ID = item.ID
+			result.City = item.City
+			result.Place = item.Place
+			result.Description = item.Description
+			result.Details.Images = append(result.Details.Images, item.Details.Images...)
+			result.Details.Overview.InterestingFacts = append(result.Details.Overview.InterestingFacts, item.Details.Overview.InterestingFacts...)
+			result.Details.Tips.WhatToBring = append(result.Details.Tips.WhatToBring, item.Details.Tips.WhatToBring...)
+			result.Details.Tips.LocalTips = append(result.Details.Tips.LocalTips, item.Details.Tips.LocalTips...)
+			result.Details.Tips.SafetyNotes = append(result.Details.Tips.SafetyNotes, item.Details.Tips.SafetyNotes...)
 		}
 		return result, rows.Err()
 
 	case filters.DayNum != "":
-		r.log.Debug("Model: ExactDay")
 		var day models.GetDayPlan
 		for rows.Next() {
 			item, dayNum, timeOfDay, err := scanItem(rows)
 			if err != nil {
 				return nil, err
 			}
-			day.DayNumber = dayNum
+			day.DayNumber = &dayNum
 			switch strings.ToLower(timeOfDay) {
 			case "morning":
 				day.Morning = item
@@ -157,26 +160,24 @@ func (r *Repository) GetItinerary(ctx context.Context, filters models.ItineraryF
 		return day, rows.Err()
 
 	case filters.ID != "":
-		r.log.Debug("Model: ExactItinerary")
 		var it models.GetItinerary
 		for rows.Next() {
 			item, dayNum, timeOfDay, err := scanItem(rows)
 			if err != nil {
 				return nil, err
 			}
-
 			it.ID = filters.ID
 			it.City = item.City
 
 			var day *models.GetDayPlan
 			for i := range it.Days {
-				if it.Days[i].DayNumber == dayNum {
+				if it.Days[i].DayNumber != nil && *it.Days[i].DayNumber == dayNum {
 					day = &it.Days[i]
 					break
 				}
 			}
 			if day == nil {
-				it.Days = append(it.Days, models.GetDayPlan{DayNumber: dayNum})
+				it.Days = append(it.Days, models.GetDayPlan{DayNumber: &dayNum})
 				day = &it.Days[len(it.Days)-1]
 			}
 
