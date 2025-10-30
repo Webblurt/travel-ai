@@ -20,10 +20,19 @@ func CreateRoutes(service services.ServiceInterface) (http.Handler, error) {
 	// =======================
 	// ITINERARIES
 	// =======================
-	mux.HandleFunc("/api/v1/itineraries", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/api/v1/itinerary", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
 			itineraries.GetItineraryHandler()(w, r)
+		default:
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
+	mux.HandleFunc("/api/v1/itineraries", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			itineraries.GetSavedItinerariesHandler()(w, r)
 		default:
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
@@ -38,7 +47,8 @@ func CreateRoutes(service services.ServiceInterface) (http.Handler, error) {
 
 		path := strings.TrimPrefix(r.URL.Path, "/api/v1/itineraries/")
 		if path == "" {
-			itineraries.GetItineraryHandler()(w, r)
+			http.Error(w, "Not found", http.StatusNotFound)
+			return
 		}
 		parts := strings.Split(path, "/")
 

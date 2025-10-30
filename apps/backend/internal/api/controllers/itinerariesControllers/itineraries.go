@@ -39,6 +39,26 @@ func (ic *ItinerariesController) GetItineraryHandler() http.HandlerFunc {
 	})
 }
 
+func (ic *ItinerariesController) GetSavedItinerariesHandler() http.HandlerFunc {
+	return ic.withAuth(func(w http.ResponseWriter, r *http.Request, token string, userid string) {
+		query := r.URL.Query()
+		filters := models.GetItinerariesReq{
+			City:    query.Get("city"),
+			Budget:  query.Get("budget"),
+			PerPage: utils.GetDefaultQueryValue(query, "per_page", "10"),
+			Page:    (utils.GetDefaultQueryValue(query, "page", "1")),
+		}
+		filters.UserID = userid
+
+		itineraries, err := ic.Service.GetItineraries(filters)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		writeJSON(w, itineraries)
+	})
+}
+
 func (ic *ItinerariesController) GetSavedItineraryHandler(id string) http.HandlerFunc {
 	return ic.withAuth(func(w http.ResponseWriter, r *http.Request, token string, userid string) {
 		itinerary, err := ic.Service.GetExactItinerary(id)

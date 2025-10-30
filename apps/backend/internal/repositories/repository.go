@@ -17,6 +17,9 @@ import (
 type RepositoryInterface interface {
 	InsertTx(ctx context.Context, tx pgx.Tx, entity models.Entity) error
 	UpdateTx(ctx context.Context, tx pgx.Tx, entity models.Entity, id string) error
+	GetItinerary(ctx context.Context, filters models.ItineraryFilters) (interface{}, error)
+	GetItinerariesCount(ctx context.Context, filters models.ItinerariesFilters) (int, error)
+	GetRepoItineraries(ctx context.Context, filters models.ItinerariesFilters) ([]models.ExactIniterary, error)
 }
 
 type Repository struct {

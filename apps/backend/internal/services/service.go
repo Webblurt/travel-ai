@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"strconv"
 	clients "travel-ai/internal/clients"
 	models "travel-ai/internal/models"
 	repositories "travel-ai/internal/repositories"
@@ -12,6 +13,7 @@ import (
 type ServiceInterface interface {
 	Validate(token string) (string, error)
 	GetItinerary(filters models.GetItineraryReq) (models.GetItineraryResp, error)
+	GetItineraries(filters models.GetItinerariesReq) (models.GetItinerariesResp, error)
 	GetExactItinerary(id string) (models.ExactIniterary, error)
 	GetExactDayItinerary(id, dayNum string) (models.ExactDayPlan, error)
 	GetTimeOfDayItinerary(id, dayNum, timeOfDay, userID string) (models.ExactItemPlan, error)
@@ -50,4 +52,15 @@ func (s *Service) SelectClientByName(name string) (*clients.Client, error) {
 		}
 	}
 	return nil, errors.New("client not found")
+}
+
+func parseIntPointer(value string) *int {
+	if value == "" {
+		return nil
+	}
+	num, err := strconv.Atoi(value)
+	if err != nil {
+		return nil
+	}
+	return &num
 }

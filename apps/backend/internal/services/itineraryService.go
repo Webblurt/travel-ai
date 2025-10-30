@@ -50,6 +50,65 @@ func (s *Service) GetItinerary(filters models.GetItineraryReq) (models.GetItiner
 	return itinerary, nil
 }
 
+func (s *Service) GetItineraries(filters models.GetItinerariesReq) (models.GetItinerariesResp, error) {
+	s.log.Debug("==== [GetItineraries] Started fetching itinerary ====")
+
+	s.log.Debug("[GetItineraries] Preparing filters for repository")
+	perPage := parseIntPointer(filters.PerPage)
+	page := parseIntPointer(filters.Page)
+	reqToRepo := models.ItinerariesFilters{
+		Limit:  *perPage,
+		Offset: (*page - 1) * *perPage,
+		City:   filters.City,
+		Budget: filters.Budget,
+		UserID: filters.UserID,
+	}
+
+	s.log.Debug("[GetItineraries] fetching itineraries count")
+	totalElements, err := s.repository.GetItinerariesCount(s.ctx, reqToRepo)
+	if err != nil {
+		s.log.Error("DB call failed: ", err)
+		return models.GetItinerariesResp{}, err
+	}
+	totalPages := (totalElements + *perPage - 1) / *perPage
+	hasNext := *page < totalPages
+	hasPrev := *page > 1
+	nextPage := 0
+	prevPage := 0
+	if hasNext {
+		nextPage = *page + 1
+	}
+	if hasPrev {
+		prevPage = *page - 1
+	}
+
+	s.log.Debug("[GetItineraries] fetching itineraries")
+	itineraries, err := s.repository.GetRepoItineraries(s.ctx, reqToRepo)
+	if err != nil {
+		s.log.Error("DB call failed: ", err)
+		return models.GetItinerariesResp{}, err
+	}
+
+	var res []models.ExactIniterary
+	for _, itinerary := range itineraries {
+		v := models.ConvertGetItineraryToExact(itinerary)
+		res = append(res, v)
+	}
+
+	return models.GetItinerariesResp{
+		TotalPages:    totalPages,
+		Page:          *page,
+		PageSize:      *perPage,
+		TotalElements: totalElements,
+		HasNext:       hasNext,
+		HasPrev:       hasPrev,
+		NextPage:      nextPage,
+		PrevPage:      prevPage,
+		Itineraries:   res,
+	}, nil
+
+}
+
 func (s *Service) GetExactItinerary(id string) (models.ExactIniterary, error) {
 	s.log.Debug("==== [GetExactItinerary] Started fetching itinerary ====")
 

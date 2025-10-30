@@ -2,6 +2,14 @@ package models
 
 import "time"
 
+type ItinerariesFilters struct {
+	Limit  int
+	Offset int
+	City   string
+	Budget string
+	UserID string
+}
+
 type ItineraryFilters struct {
 	ID        string
 	DayNum    string

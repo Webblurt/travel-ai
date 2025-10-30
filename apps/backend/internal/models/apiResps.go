@@ -1,5 +1,17 @@
 package models
 
+type GetItinerariesResp struct {
+	TotalPages    int              `json:"total_pages"`
+	Page          int              `json:"page"`
+	PageSize      int              `json:"page_size"`
+	TotalElements int              `json:"total_elements"`
+	HasNext       bool             `json:"has_next"`
+	HasPrev       bool             `json:"has_prev"`
+	NextPage      int              `json:"next_page,omitempty"`
+	PrevPage      int              `json:"prev_page,omitempty"`
+	Itineraries   []ExactIniterary `json:"itineraries"`
+}
+
 type ExactIniterary struct {
 	ID            string         `json:"id"`
 	City          string         `json:"city"`
