@@ -13,6 +13,14 @@ Built with:
 
 ## Release Notes
 
+### v1.4.0 Active Development
+Branch: `v1.4.0`
+
+**Updates**
+- swagger documentation for backend added
+
+---
+
 ### v1.3.0 Active Development
 Branch: `v1.3.0`
 

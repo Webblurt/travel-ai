@@ -1,0 +1,395 @@
+openapi: 3.0.3
+info:
+  title: Travel AI API
+  version: 1.4.0
+  description: >
+    REST API for managing travel itineraries.
+    All endpoints require authorization via Bearer token.
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    GetItinerariesResp:
+      type: object
+      properties:
+        total_pages:
+          type: integer
+          example: 5
+        page:
+          type: integer
+          example: 1
+        page_size:
+          type: integer
+          example: 10
+        total_elements:
+          type: integer
+          example: 42
+        has_next:
+          type: boolean
+          example: true
+        has_prev:
+          type: boolean
+          example: false
+        next_page:
+          type: integer
+          nullable: true
+          example: 2
+        prev_page:
+          type: integer
+          nullable: true
+          example: null
+        itineraries:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExactItinerary"
+
+    ExactItinerary:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "itinerary_123"
+        city:
+          type: string
+          example: "Paris"
+        itinerary_cost:
+          type: string
+          example: "medium"
+        days:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExactDayPlan"
+
+    ExactDayPlan:
+      type: object
+      properties:
+        day_number:
+          type: integer
+          example: 1
+        morning:
+          $ref: "#/components/schemas/ExactItemPlan"
+        afternoon:
+          $ref: "#/components/schemas/ExactItemPlan"
+        evening:
+          $ref: "#/components/schemas/ExactItemPlan"
+
+    ExactItemPlan:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "activity_001"
+        city:
+          type: string
+          example: "Paris"
+        place:
+          type: string
+          example: "Eiffel Tower"
+        description:
+          type: string
+          example: "Iconic Paris landmark offering panoramic city views."
+        activity_type:
+          type: string
+          example: "sight"
+        cost:
+          type: string
+          example: "$25"
+        duration:
+          type: string
+          example: "2 hours"
+        address:
+          type: string
+          example: "Champ de Mars, 5 Avenue Anatole France, 75007 Paris, France"
+        details:
+          $ref: "#/components/schemas/ItemDetails"
+
+    ItemDetails:
+      type: object
+      properties:
+        images:
+          type: array
+          items:
+            type: object
+            properties:
+              url:
+                type: string
+                example: "https://example.com/eiffel.jpg"
+              description:
+                type: string
+                example: "View from the second level of the Eiffel Tower"
+        overview:
+          type: object
+          properties:
+            short_description:
+              type: string
+              example: "A historic iron tower built in 1889."
+            history_or_background:
+              type: string
+              example: "Constructed for the 1889 World's Fair, now a global icon."
+            interesting_facts:
+              type: array
+              items:
+                type: string
+              example:
+                - "The tower is repainted every 7 years."
+                - "It was originally meant to be temporary."
+        visiting_info:
+          type: object
+          properties:
+            opening_hours:
+              type: string
+              example: "09:00 - 23:00"
+            best_time_to_visit:
+              type: string
+              example: "Early morning or sunset"
+            average_visit_duration:
+              type: string
+              example: "2 hours"
+            entry_fee:
+              type: string
+              example: "$25"
+            website:
+              type: string
+              example: "https://www.toureiffel.paris"
+            contact_phone:
+              type: string
+              example: "+33 892 70 12 39"
+        location_info:
+          type: object
+          properties:
+            neighborhood:
+              type: string
+              example: "7th arrondissement"
+            nearest_transport:
+              type: string
+              example: "Bir-Hakeim Metro Station"
+            distance_from_city_center:
+              type: string
+              example: "3 km"
+            map_link:
+              type: string
+              example: "https://maps.google.com/?q=Eiffel+Tower"
+        tips:
+          type: object
+          properties:
+            what_to_bring:
+              type: array
+              items:
+                type: string
+              example: ["Camera", "Water bottle"]
+            local_tips:
+              type: array
+              items:
+                type: string
+              example: ["Buy tickets online to skip the line"]
+            safety_notes:
+              type: array
+              items:
+                type: string
+              example: ["Beware of pickpockets around tourist areas"]
+
+paths:
+  /api/v1/itinerary:
+    get:
+      summary: Get the current itinerary (without details)
+      tags: [Itineraries]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: city
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Name of the destination city
+        - name: days
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 3
+          description: Number of travel days
+        - name: budget
+          in: query
+          required: false
+          schema:
+            type: string
+            default: any
+          description: Budget category (e.g. low, medium, high, or "any")
+        - name: currency
+          in: query
+          required: false
+          schema:
+            type: string
+            default: "$"
+          description: Currency symbol or code
+      responses:
+        "200":
+          description: Successful response (details omitted)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExactItinerary"
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal server error
+
+  /api/v1/itineraries:
+    get:
+      summary: Get a list of saved itineraries (with full details)
+      tags: [Itineraries]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: city
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter itineraries by city name
+        - name: budget
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter itineraries by budget
+        - name: per_page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+          description: Number of itineraries per page
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination
+      responses:
+        "200":
+          description: Successful response (with details)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetItinerariesResp"
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal server error
+
+  /api/v1/itineraries/{id}:
+    get:
+      summary: Get a saved itinerary by ID
+      tags: [Itineraries]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Itinerary ID
+      responses:
+        "200":
+          description: Successful response (with details)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExactItinerary"
+        "404":
+          description: Itinerary not found
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal server error
+
+  /api/v1/itineraries/{id}/{dayNum}:
+    get:
+      summary: Get itinerary details for a specific day
+      tags: [Itineraries]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Itinerary ID
+        - name: dayNum
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Day number
+      responses:
+        "200":
+          description: Successful response (single day plan with details)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExactDayPlan"
+        "404":
+          description: Day not found
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal server error
+
+  /api/v1/itineraries/{id}/{dayNum}/{section}:
+    get:
+      summary: Get itinerary section by time of day (morning/afternoon/evening)
+      tags: [Itineraries]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Itinerary ID
+        - name: dayNum
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Day number
+        - name: section
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [morning, afternoon, evening]
+          description: Time of day section
+      responses:
+        "200":
+          description: Successful response (single section item with details)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExactItemPlan"
+        "404":
+          description: Section not found
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal server error

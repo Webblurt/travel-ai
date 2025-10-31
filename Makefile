@@ -7,8 +7,11 @@ build:
 run:
 	docker run -p 8080:8080 travel-ai
 
-compose:
-	docker-compose up --build
+db:
+	docker-compose -f docker-compose.db.yml up -d
+
+swagger:
+	docker-compose -f docker-compose.swagger.yml up -d
 
 clean:
 	docker system prune -f
