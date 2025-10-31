@@ -1,37 +1,76 @@
-<script>
-  import Header from "$lib/components/Header.svelte";
-  import CityInput from "$lib/components/CityInput.svelte";
-  import ResponseBlock from "$lib/components/ResponseBlock.svelte";
+<script lang="ts">
+  import { getItinerary } from '../lib/api'
+  import type { ItineraryResponse } from '../lib/types'
+  import DayCard from '../lib/components/DayCard.svelte'
 
-  let city = "";
-  let response = "";
-  let isLoading = false;
+  let city = ''
+  let days = ''
+  let budget = ''
+  let currency = ''
+  let loading = false
+  let error = ''
+  let result: ItineraryResponse | null = null
 
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+  async function handleSubmit() {
+    if (!city.trim()) {
+      error = 'Please enter a city.'
+      return
+    }
 
-  async function handleSearch(cityName) {
-    if (!cityName) return;
-    isLoading = true;
-    response = "";
+    loading = true
+    error = ''
+    result = null
 
     try {
-      const res = await fetch(`${API_URL}/api/ai?city=${encodeURIComponent(cityName)}`);
-      if (!res.ok) throw new Error("Ошибка ответа от API");
-      const data = await res.json();
-      response = data.message || "Пустой ответ";
-    } catch (e) {
-      response = "Ошибка при запросе к серверу";
-      console.error(e);
-    } finally {
-      isLoading = false;
-    }
+      const data = await getItinerary(city, days, budget, currency)
+
+      if (!data || !data.city || !Array.isArray(data.days)) {
+        throw new Error('Invalid JSON structure')
+      }
+
+      result = data
+    } catch (err: any) {
+        console.error(err)
+
+        if (String(err).includes('invalid JSON')) {
+          error = 'Invalid AI response, please try again'
+        } else {
+          error = 'Error while creating itinerary'
+        }
+      }
   }
 </script>
 
-<main class="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-indigo-900 text-white flex flex-col">
-  <Header />
-  <div class="flex-grow flex flex-col items-center justify-center px-4">
-    <CityInput bind:city onSearch={handleSearch} />
-    <ResponseBlock text={response} {isLoading} />
-  </div>
+<main class="p-6 max-w-3xl mx-auto">
+  <h1 class="text-3xl font-bold mb-6 text-center text-blue-700">AI Travel Planner</h1>
+
+  <form on:submit|preventDefault={handleSubmit} class="grid gap-4 bg-gray-50 p-6 rounded-xl shadow-sm">
+    <input bind:value={city} placeholder="City" class="p-2 border rounded" />
+    <input bind:value={days} placeholder="Number of days" class="p-2 border rounded" />
+    <input bind:value={budget} placeholder="Budget (e.g. 1000)" class="p-2 border rounded" />
+    <input bind:value={currency} placeholder="Currency (e.g. $)" class="p-2 border rounded" />
+
+    <button
+      type="submit"
+      class="p-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition disabled:opacity-50"
+      disabled={loading}
+    >
+      {loading ? 'Generating...' : 'Generate itinerary'}
+    </button>
+  </form>
+
+  {#if error}
+    <div class="mt-4 bg-red-50 border border-red-300 text-red-700 p-4 rounded">
+      <p>{error}</p>
+
+      {#if error === 'Invalid AI response, please try again'}
+        <button
+          on:click={handleSubmit}
+          class="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+        >
+          Try again
+        </button>
+      {/if}
+    </div>
+  {/if}
 </main>
