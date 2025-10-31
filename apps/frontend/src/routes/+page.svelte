@@ -30,15 +30,14 @@
 
       result = data
     } catch (err: any) {
-      console.error('Error:', err)
-      if (err.message.includes('Invalid JSON')) {
-        error = 'The AI returned an invalid response. Please try again.'
-      } else {
-        error = 'Something went wrong while generating itinerary. Please try again.'
+        console.error(err)
+
+        if (String(err).includes('invalid JSON')) {
+          error = 'Invalid AI response, please try again'
+        } else {
+          error = 'Error while creating itinerary'
+        }
       }
-    } finally {
-      loading = false
-    }
   }
 </script>
 
@@ -61,17 +60,17 @@
   </form>
 
   {#if error}
-    <p class="text-red-600 mt-4 text-center font-medium">{error}</p>
-  {/if}
+    <div class="mt-4 bg-red-50 border border-red-300 text-red-700 p-4 rounded">
+      <p>{error}</p>
 
-  {#if result}
-    <section class="mt-8 space-y-6">
-      <h2 class="text-2xl font-semibold text-center">Itinerary for {result.city}</h2>
-      <p class="text-gray-700 mb-4 text-center">Estimated total cost: {result.itinerary_cost}</p>
-
-      {#each result.days as day}
-        <DayCard {day} />
-      {/each}
-    </section>
+      {#if error === 'Invalid AI response, please try again'}
+        <button
+          on:click={handleSubmit}
+          class="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+        >
+          Try again
+        </button>
+      {/if}
+    </div>
   {/if}
 </main>
