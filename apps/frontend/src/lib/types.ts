@@ -1,4 +1,5 @@
 export interface ItineraryResponse {
+  id: string
   city: string
   itinerary_cost: string
   days: DayPlan[]
@@ -7,7 +8,7 @@ export interface ItineraryResponse {
 export interface DayPlan {
   day_number: number
   morning: Activity
-  day: Activity
+  afternoon: Activity
   evening: Activity
 }
 

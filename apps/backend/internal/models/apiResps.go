@@ -72,6 +72,7 @@ type ExactItemPlan struct {
 }
 
 type GetItineraryResp struct {
+	ID            string    `json:"id"`
 	City          string    `json:"city"`
 	ItineraryCost string    `json:"itinerary_cost"`
 	Days          []DayPlan `json:"days"`

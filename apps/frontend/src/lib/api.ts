@@ -7,7 +7,7 @@ function basicValidate(it: any): it is ItineraryResponse {
   if (!Array.isArray(it.days)) return false
   for (const d of it.days) {
     if (typeof d.day_number !== 'number' && typeof d.day_number !== 'string') return false
-    if (!d.morning || !d.day || !d.evening) return false
+    if (!d.morning || !d.afternoon || !d.evening) return false
   }
   return true
 }
@@ -25,7 +25,7 @@ export async function getItinerary(
   if (budget) params.append('budget', budget)
   if (currency) params.append('currency', currency)
 
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/itineraries?${params.toString()}`, {
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/itinerary?${params.toString()}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -59,4 +59,24 @@ export async function getItinerary(
     ;(err as any).raw = raw
     throw err
   }
+}
+
+export async function getItemDetails(
+  itineraryId: string,
+  dayNum: number,
+  section: 'morning' | 'afternoon' | 'evening'
+): Promise<any> {
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/itineraries/${itineraryId}/${dayNum}/${section}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${import.meta.env.VITE_API_TOKEN}`,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch details: ${res.status}`);
+  }
+
+  return await res.json();
 }

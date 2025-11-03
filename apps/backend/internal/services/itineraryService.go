@@ -34,7 +34,7 @@ func (s *Service) GetItinerary(filters models.GetItineraryReq) (models.GetItiner
 	itineraryResp := clientResp
 
 	s.log.Debug("[GetItinerary] Saving response to db...")
-	_, err = s.createItinerary(*itineraryResp, filters.UserID)
+	itineraryID, err := s.createItinerary(*itineraryResp, filters.UserID)
 	if err != nil {
 		s.log.Error("DB call failed: ", err)
 		return models.GetItineraryResp{}, err
@@ -42,6 +42,7 @@ func (s *Service) GetItinerary(filters models.GetItineraryReq) (models.GetItiner
 
 	s.log.Debug("[GetItinerary] Mapping response records into internal models...")
 	itinerary := models.GetItineraryResp{
+		ID:            itineraryID,
 		City:          itineraryResp.City,
 		ItineraryCost: itineraryResp.ItineraryCost,
 		Days:          itineraryResp.Days,

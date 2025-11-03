@@ -19,11 +19,8 @@ RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/
 COPY --from=frontend-build /app/apps/frontend/build ./frontend
 COPY --from=backend-build /app/bin/travel-ai ./travel-ai
 COPY apps/backend/config ./config
-<<<<<<< HEAD
 COPY apps/backend/migrations ./migrations
-=======
 COPY apps/frontend/.env .env
->>>>>>> frontend-refactor
 COPY .env .env  
 EXPOSE 8080
 CMD ["./travel-ai"]
