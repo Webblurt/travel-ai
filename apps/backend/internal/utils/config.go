@@ -27,6 +27,11 @@ type Config struct {
 		Database      string `yaml:"database"`
 		MigrationPath string `yaml:"migration_path"`
 	} `yaml:"database"`
+	Cors struct {
+		AllowedOrigins []string `yaml:"allowed_origins"`
+		AlloweMethods  []string `yaml:"allowed_methods"`
+		AllowedHeaders []string `yaml:"allowed_headers"`
+	} `yaml:"cors"`
 	Prompts struct {
 		TravelAI []struct {
 			PromptType string `yaml:"prompt_type"`

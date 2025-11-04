@@ -5,15 +5,18 @@ import (
 	"errors"
 	"net/http"
 	services "travel-ai/internal/services"
+	utils "travel-ai/internal/utils"
 )
 
 type ItinerariesController struct {
 	Service services.ServiceInterface
+	Cfg     *utils.Config
 }
 
-func NewItinerariesController(service services.ServiceInterface) *ItinerariesController {
+func NewItinerariesController(service services.ServiceInterface, cfg *utils.Config) *ItinerariesController {
 	return &ItinerariesController{
 		Service: service,
+		Cfg:     cfg,
 	}
 }
 

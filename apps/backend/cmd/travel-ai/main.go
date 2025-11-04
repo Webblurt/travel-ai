@@ -57,7 +57,7 @@ func main() {
 	log.Info("Service created successful")
 
 	// creating routes
-	router, err := routes.CreateRoutes(service)
+	router, err := routes.CreateRoutes(service, cfg)
 	if err != nil {
 		log.Fatal("Error creating routes: ", err)
 	}

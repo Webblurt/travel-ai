@@ -6,14 +6,15 @@ import (
 	"strings"
 	itinerariesControllers "travel-ai/internal/api/controllers/itinerariesControllers"
 	services "travel-ai/internal/services"
+	utils "travel-ai/internal/utils"
 )
 
-func CreateRoutes(service services.ServiceInterface) (http.Handler, error) {
+func CreateRoutes(service services.ServiceInterface, cfg *utils.Config) (http.Handler, error) {
 	if service == nil {
 		return nil, errors.New("service is nil")
 	}
 
-	itineraries := itinerariesControllers.NewItinerariesController(service)
+	itineraries := itinerariesControllers.NewItinerariesController(service, cfg)
 
 	mux := http.NewServeMux()
 
@@ -88,5 +89,22 @@ func CreateRoutes(service services.ServiceInterface) (http.Handler, error) {
 	fs := http.FileServer(http.Dir("./frontend"))
 	mux.Handle("/", fs)
 
-	return mux, nil
+	handler := withCORS(mux, cfg)
+
+	return handler, nil
+}
+
+func withCORS(next http.Handler, cfg *utils.Config) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", strings.Join(cfg.Cors.AllowedOrigins, ","))
+		w.Header().Set("Access-Control-Allow-Methods", strings.Join(cfg.Cors.AlloweMethods, ","))
+		w.Header().Set("Access-Control-Allow-Headers", strings.Join(cfg.Cors.AllowedHeaders, ","))
+
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
 }
