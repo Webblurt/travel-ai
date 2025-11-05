@@ -1,3 +1,5 @@
+import type { Writable } from 'svelte/store'
+
 export interface PlaceInfo {
   place: string
   description: string
